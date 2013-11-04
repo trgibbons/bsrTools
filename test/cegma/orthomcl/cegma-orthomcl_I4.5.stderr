@@ -1,0 +1,32 @@
+[mcl] new tab created
+[mcl] pid 90682
+ ite -------------------  chaos  time hom(avg,lo,hi) expa expb expc fmv
+  1  ...................   1.04  0.00 0.99/0.72/1.63 1.01 1.01 1.01   0
+  2  ...................   2.31  0.00 0.85/0.44/1.73 1.00 1.00 1.01   0
+  3  ...................   1.68  0.00 0.67/0.44/2.13 1.00 0.94 0.95   0
+  4  ...................   1.08  0.00 0.86/0.34/1.00 1.00 0.68 0.65   0
+  5  ...................   0.47  0.00 0.97/0.66/1.00 1.00 0.39 0.25   0
+  6  ...................   0.25  0.00 0.99/0.77/1.00 1.00 0.72 0.18   0
+  7  ...................   0.20  0.00 1.00/0.84/1.00 1.00 0.94 0.17   0
+  8  ...................   0.13  0.00 1.00/0.87/1.00 1.00 0.98 0.17   0
+  9  ...................   0.24  0.00 1.00/0.78/1.00 1.00 1.00 0.17   0
+ 10  ...................   0.04  0.00 1.00/0.96/1.00 1.00 1.00 0.17   0
+ 11  ...................   0.00  0.00 1.00/1.00/1.00 1.00 1.00 0.17   0
+[mcl] jury pruning marks: <100,100,99>, out of 100
+[mcl] jury pruning synopsis: <99.9 or perfect> (cf -scheme, -do log)
+[mcl] output is in cegma-orthomcl_I4.5.mclOutput
+[mcl] 462 clusters found
+[mcl] output is in cegma-orthomcl_I4.5.mclOutput
+
+Please cite:
+    Stijn van Dongen, Graph Clustering by Flow Simulation.  PhD thesis,
+    University of Utrecht, May 2000.
+       (  http://www.library.uu.nl/digiarchief/dip/diss/1895620/full.pdf
+       or  http://micans.org/mcl/lit/svdthesis.pdf.gz)
+OR
+    Stijn van Dongen, A cluster algorithm for graphs. Technical
+    Report INS-R0010, National Research Institute for Mathematics
+    and Computer Science in the Netherlands, Amsterdam, May 2000.
+       (  http://www.cwi.nl/ftp/CWIreports/INS/INS-R0010.ps.Z
+       or  http://micans.org/mcl/lit/INS-R0010.ps.Z)
+

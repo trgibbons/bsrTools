@@ -1,0 +1,24 @@
+# BLASTP version
+# Query: org1|seqA
+# Database: both.fasta
+# Fields: query id, subject id, % identity, alignment length, mismatches, gap opens, q. start, q. end, s. start, s. end, evalue, bit score, query length, subject length
+# 1 hits found
+org1|seqA	org1|seqA	100.00	100	0	0	1	100	1	100	0.0	200	100	100
+# BLASTP version
+# Query: org1|seqB
+# Database: both.fasta
+# Fields: query id, subject id, % identity, alignment length, mismatches, gap opens, q. start, q. end, s. start, s. end, evalue, bit score, query length, subject length
+# 1 hits found
+org1|seqB	org1|seqB	100.00	100	0	0	1	100	1	100	0.0	200	100	100
+# BLASTP version
+# Query: org2|seqA
+# Database: both.fasta
+# Fields: query id, subject id, % identity, alignment length, mismatches, gap opens, q. start, q. end, s. start, s. end, evalue, bit score, query length, subject length
+# 1 hits found
+org2|seqA	org2|seqA	100.00	100	0	0	1	100	1	100	0.0	200	100	100
+# BLASTP version
+# Query: org2|seqB
+# Database: both.fasta
+# Fields: query id, subject id, % identity, alignment length, mismatches, gap opens, q. start, q. end, s. start, s. end, evalue, bit score, query length, subject length
+# 1 hits found
+org2|seqB	org2|seqB	100.00	100	0	0	1	100	1	100	0.0	200	100	100

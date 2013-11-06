@@ -2,68 +2,136 @@
 
 # Standard Python libraries
 import sys
+import os
 import argparse
 
-# Third part libraries
+# Third-party libraries
 import networkx as nx
 
 
-# Attempt to catch errors with inputs
 def catch_argument_errors(args):
-  kill = 0
+  """Attempt to catch argument and file format errors
 
-  if not len(args.both) > 0:
+  Args:
+    args: The argparse.Namespace object returned by get_parse_args
+
+  Returns:
+    None (hopefully)
+
+  Raises:
+    TODO: Implement proper Python exception handling
+  """
+  kill_switch = 0
+
+  if os.fstat(args.both.fileno()).st_size == 0:
+    args.both = False
     if not len(args.self)>0 and len(args.cross)>0:
-      sys.stderr.write('Must have at least one file flagged as "both", or at least one each flagged as "self" and "cross", repectively.\n')
-      kill += 1
+      sys.stderr.write(
+        'Must have at least one file flagged as "both", or at least one each '+
+        'flagged as "self" and "cross", repectively.\n')
+      kill_switch += 1
 
-  if not args.ids:
+  if not args.idchar or args.idlist:
     if args.normalize:
-      sys.stderr.write('The "--normalize" option requires the "--ids" option.\n')
-      kill += 1
-    if args.merge:
-      sys.stderr.write('The "--merge" option requires the "--ids" option.\n')
-      kill += 1
+      sys.stderr.write(
+        'The "--normalize" option requires the "--idchar" and/or "--idlist" '+
+        'option(s).\n')
+      kill_switch += 1
     if args.translated:
-      sys.stderr.write('The "--translated" option requires the "--ids" option.\n')
-      kill += 1
+      sys.stderr.write(
+        'The "--translated" option requires the "--idchar" and/or "--idlist" '+
+        'option(s).\n')
+      kill_switch += 1
+    if args.merge:
+      sys.stderr.write(
+        'The "--merge" option requires the "--idchar" and/or "--idlist" '+
+        'option(s).\n')
+      kill_switch += 1
 
-  if kill > 0:
+  if kill_switch > 0:
     sys.exit()
 
 
-
-# Parse the commandline arguments 
 def get_parsed_args():
- 
-  # Initialize argument parser
-  parser = argparse.ArgumentParser(description='Compute a set of Bit Score Ratios from either BLASTP or BLASTN hits')
- 
-  # Input files
+  """Parse the command line arguments
+
+  Parses command line arguments using the argparse package, which is a standard
+  Python module starting with version 2.7.
+
+  Args:
+    None, argparse fetches them from user input
+
+  Returns:
+    args: An argparse.Namespace object containing the parsed arguments
+
+  Raises:
+    None
+  """
+  parser = argparse.ArgumentParser(
+             description='Compute a set of Bit Score Ratios from either '+
+                         'BLASTP or BLASTN hits')
+
+  # Group: IO options
   parser.add_argument('-s', '--self', dest='self', nargs='+',
-                      help='Tab-delimited BLAST files containing')
+                      type=argparse.FileType('r'),
+                      help='Tab-delimited BLAST file(s) containing self '+
+                           'alignments (non-self alignments will be ignored)')
   parser.add_argument('-c', '--cross', dest='cross', nargs='+',
-                      help='Minimum protein length in amino acids (def=30, off=0)')
-  parser.add_argument('-b', '--both', dest='both', nargs='+',
-                      help='Fraction of the length of the longest ORF that subsequent ORFs much reach (def=0.50, off=0)')
+                      type=argparse.FileType('r'),
+                      help='Tab-delimited BLAST file(s) containing non-self '+
+                           'alignments (self alignments will be ignored)')
+  parser.add_argument('-b', '--both', dest='both', nargs='?',
+                      type=argparse.FileType('r'), default=sys.stdin,
+                      help='Tab-delimited BLAST file containing a combination '+
+                           'of self and non-self alignments [def=stdin]')
+  parser.add_argument('-o', '--out', dest='out', nargs='?',
+                      type=argparse.FileType('w'), default=sys.stdout,
+                      help='Name for MCL-formatted graph output file '+
+                           '[def=stdout]')
+  parser.add_argument('-d', '--debug', dest='debug',
+                      type=argparse.FileType('w'), default=False,
+                      help='File for capturing debug messages')
 
-  # Unidirectional vs. reciprocal Bit Score Ratio
-  parser.add_argument('-r', '--reciprocal', dest='reciprocal', action='store_true', default=False,
-                      help='Maximum number of translated ORFs to output from each sequence [def=false]')
+  # Group: Formatting options
+  parser.add_argument('--bscol', dest='bscol',
+                      action='store', type=int, default=12,
+                      help='One-indexed column containing pairwise bit scores '+
+                           '(not required if files include standard header '+
+                           'lines) [def=12]')
+  parser.add_argument('--idchar', dest='idchar', action='store',
+                      help='The character used to separate the organism ID '+
+                           'from the rest of the sequence header (eg. "|")]')
+  parser.add_argument('--idlist', dest='idlist', action='store',
+                      help='Text file containing a list of organisms IDs, '+
+                           'which must occur at the beginning of each '+
+                           'sequence ID ("--idchar" option must also be '+
+                           'provided if any IDs are prefixes of other IDs)')
 
-  # Yet to be implemented options
-  parser.add_argument('-i', '--ids', dest='ids', action='store',
-                      help='Either a text file containing a list of organisms IDs, which must occur at the beginning of each sequence ID, or the character used to separate the organism IDs from the rest of sequence IDs (eg. "|")')
-  parser.add_argument('-n', '--normalize', dest='normalize', action='store_true', default=False,
-                      help='Normalize edge weights according to intra- and inter-organism averages (requires the "-i" option)')
-  parser.add_argument('-m', '--merge', dest='merge', action='store_true', default=False,
-                      help='Merge sequences from a single organism when they have non-overlapping alignments to the same target sequence (helpful for highly-fragmented assemblies, requires the "-i" option)')
-  parser.add_argument('--bscol', dest='bscol', action='store', type=int, default=12,
-                      help='One-indexed column containing pairwise bit scores (not required if files include standard header lines) [def=12]')
+  # Group: Behavioral options
+  parser.add_argument('-n', '--normalize', dest='normalize',
+                      action='store_true', default=False,
+                      help='Normalize edge weights according to intra- and '+
+                           'inter-organism averages (requires the "-i" option)')
+  parser.add_argument('-r', '--reciprocal', dest='reciprocal',
+                      action='store_true', default=False,
+                      help='Divide alignment bit score by max(self1,self2) '+
+                      'instead of min(self1,self2) for increased stringency '+
+                      '[def=false]')
+
+  # Group: TODO
   parser.add_argument('-t', '--translated', action='store_true', default=False,
-                      help='One or more of the data sets were bioinformatically translated by BLAST (requires the "-i" option be used with a file containing a second column specifying either "nuc" or "pro" for each organism ID listed in the first column')
-  parser.add_argument('--hmmer', dest='hmmer', action='store_true', default=False,
-                      help="Alignment files are in HMMer format, not BLAST (not required if files include standard header lines) -- Actually, I've decided to create separate BLAST and HMMer programs")
+                      help='One or more of the data sets were '+
+                           'bioinformatically translated by BLAST (requires '+
+                           'the "--idchar" and/or "--idlist" option(s) be '+
+                           'used with a file containing a second column '+
+                           'specifying either "nuc" or "pro" for each '+
+                           'organism ID listed in the first column')
+  parser.add_argument('-m', '--merge', dest='merge',
+                      action='store_true', default=False,
+                      help='Merge sequences from a single organism when they '+
+                           'have non-overlapping alignments to the same '+
+                           'target sequence (helpful for highly-fragmented '+
+                           'assemblies, requires the "-i" option)')
 
   args = parser.parse_args()
 
@@ -72,98 +140,139 @@ def get_parsed_args():
   return args
 
 
+def get_self_bit_scores(bsr_graph, self_handle, bscol):
+  """Get bit scores from full-length self-alignments
 
-# Get bit scores from full-length self-alignments
-def get_self_bit_scores(BSRgraph, selfBlastFiles, bscol):
-  for file in selfBlastFiles:
-    for line in open(file, "r"):
-      if line[0] == "#":
-        continue
-      temp = line.rstrip().split()
-      if temp[0] == temp[1]:
-        seqID = str(temp[0])
-        bitScore = int(float(temp[bscol]))
-        if not BSRgraph.has_node(seqID):
-          BSRgraph.add_node(seqID, sbs=bitScore, org=None)
-        elif bitScore > BSRgraph.node[seqID]['sbs']:
-          BSRgraph.node[seqID]['sbs'] = bitScore
+  Searches an open file for tab-delimited BLAST hit records where the query and
+  reference IDs are identical.  It is important that BLAST is run with option
+  "--soft_masking true" or the self-alignments are unlikely to be full length.
 
+  Args:
+    bsr_graph: A NetworkX graph data structure (does not need to be empty)
+    self_handle: An open file handle containing self-alignments (can contain
+      other alignments and/or comment lines beginning with a hash '#' character)
+    bscol: Column containing the bit scores
 
+  Returns:
+    Nothing, the NetworkX graph is edited in place
 
-# Get bit scores from non-self alignments
-def get_cross_bit_scores(BSRgraph, crossBlastFiles, bscol):
-  for file in crossBlastFiles:
-    for line in open(file, "r"):
-      if line[0] == "#":
-        continue
-      temp = line.rstrip().split()
-      if temp[0] != temp[1]:
-        qID = str(temp[0])
-        rID = str(temp[1])
-        bitScore = int(float(temp[bscol]))
-        if BSRgraph.has_node(qID) and BSRgraph.has_node(rID):
-          if not BSRgraph.has_edge(qID, rID):
-            BSRgraph.add_edge(qID, rID, weight=bitScore)
-          elif bitScore > BSRgraph[qID][rID]['weight']:
-            BSRgraph[qID][rID]['weight'] = bitScore
+  Raises:
+    None
+  """
+  for line in self_handle:
+    if line[0] == "#":
+      continue
+    temp = line.rstrip().split()
+
+    if temp[0] == temp[1]:
+      seq_id = str(temp[0])
+      bitscore = int(temp[bscol])
+
+      if not bsr_graph.has_node(seq_id):
+        bsr_graph.add_node(seq_id, sbs=bitscore, org=None)
+      elif bitscore > bsr_graph.node[seq_id]['sbs']:
+        bsr_graph.node[seq_id]['sbs'] = bitscore
 
 
+def get_cross_bit_scores(bsr_graph, cross_handle, bscol):
+  """Get bit scores from full-length non-self-alignments
 
-# Convert Bit Scores into Bit Score Ratios and account for intra-/inter- organism differences, if requested
-def adjust_edge_weights(BSRgraph, ids, reciprocal, normalize):
-  for u,v,edata in BSRgraph.edges(data=True):
+  Searches an open file for tab-delimited BLAST hit records where the query and
+  reference IDs are not identical. It is important that BLAST is run with option
+  "--soft_masking true" or the self-alignments are unlikely to be full length.
+
+  Args:
+    bsr_graph: A NetworkX graph data structure containing self-alignment scores
+    self_handle: An open file handle containing non-self-alignments (can contain
+      other alignments and/or comment lines beginning with a hash '#' character)
+    bscol: Column containing the bit scores
+
+  Returns:
+    Nothing, the NetworkX graph is edited in place
+
+  Raises:
+    None
+  """
+  for line in cross_handle:
+    if line[0] == "#":
+      continue
+    temp = line.rstrip().split()
+
+    if temp[0] != temp[1]:
+      qry_id = str(temp[0])
+      ref_id = str(temp[1])
+      bitscore = int(float(temp[bscol]))
+      if bsr_graph.has_node(qry_id) and bsr_graph.has_node(ref_id):
+        if not bsr_graph.has_edge(qry_id, ref_id):
+          bsr_graph.add_edge(qry_id, ref_id, weight=bitscore)
+        elif bitscore > bsr_graph[qry_id][ref_id]['weight']:
+          bsr_graph[qry_id][ref_id]['weight'] = bitscore
+
+
+def adjust_edge_weights(bsr_graph, reciprocal, normalize, org_ids):
+  """Convert Bit Scores into Bit Score Ratios
+
+  Iterates through the edges in a NetworkX graph, dividing all cross-alignment
+  scores by either the smaller or larger of the two self-alignment scores
+
+  Convert Bit Scores into Bit Score Ratios and account for intra-/inter- 
+  organism differences, if requested
+  """
+  for u,v,edata in bsr_graph.edges(data=True):
     if reciprocal:
-      BSRgraph[u][v]['weight'] = float(edata['weight']) / float(max(BSRgraph.node[u]['sbs'],BSRgraph.node[v]['sbs']))
+      denom = float(max(bsr_graph.node[u]['sbs'],bsr_graph.node[v]['sbs']))
     else:
-      BSRgraph[u][v]['weight'] = float(edata['weight']) / float(min(BSRgraph.node[u]['sbs'],BSRgraph.node[v]['sbs']))
+      denom = float(min(bsr_graph.node[u]['sbs'],bsr_graph.node[v]['sbs']))
 
+    numer = float(edata['weight'])
+    bsr_graph[u][v]['weight'] = numer / denom
 
 
 # Print graph for MCL
-def print_mcl_input_file(BSRgraph):
-  for line in nx.generate_edgelist(BSRgraph, delimiter='\t', data=['weight']):
-    sys.stdout.write(line+'\n')
+def print_mcl_input_file(bsr_graph, out_handle):
+  for line in nx.generate_edgelist(bsr_graph, delimiter='\t', data=['weight']):
+    out_handle.write(line+'\n')
 
 
-
+# Print debug info
+def print_nodes(bsr_graph, debug_handle):
+  for node, data in bsr_graph.nodes(data=True):
+    debug_handle.write(str(node)+"\t"+repr(data)+"\n")
 
 
 def main(argv=None):
   if argv == None:
     argv = sys.argv
- 
+
   args = get_parsed_args() 
 
-  BSRgraph = nx.Graph()
+  bsr_graph = nx.Graph()
+  org_ids = set()
 
-  if args.self and args.both:
-    selfBlastFiles = args.self+args.both
-  elif args.self:
-    selfBlastFiles = args.self
-  elif args.both:
-    selfBlastFiles = args.both
+  if args.self:
+    for self_handle in args.self:
+      get_self_bit_scores(bsr_graph, self_handle, args.bscol-1)
 
-  get_self_bit_scores(BSRgraph, selfBlastFiles, args.bscol-1)
+  if args.both:
+    get_self_bit_scores(bsr_graph, args.both, args.bscol-1)
+    args.both.seek(0)
+    get_cross_bit_scores(bsr_graph, args.both, args.bscol-1)
 
-  if args.cross and args.both:
-    crossBlastFiles = args.cross+args.both
-  elif args.cross:
-    crossBlastFiles = args.cross
-  elif args.both:
-    crossBlastFiles = args.both
+  if args.debug:
+    print_nodes(bsr_graph, args.debug)
 
-  get_cross_bit_scores(BSRgraph, crossBlastFiles, args.bscol-1)
+  if args.cross:
+    for cross_handle in args.cross:
+      get_cross_bit_scores(bsr_graph, cross_handle, args.bscol-1)
 
-  adjust_edge_weights(BSRgraph, args.ids, args.reciprocal, args.normalize)
+  # TODO: This program will accept either organism IDs, or an organism ID 
+  # separator character, but this function will requie that the IDs have 
+  # already been determined before this point
+  adjust_edge_weights(bsr_graph, args.reciprocal, args.normalize, org_ids)
 
-  print_mcl_input_file(BSRgraph)
-
-
-
+  print_mcl_input_file(bsr_graph, args.out)
 
 
-# Executing the main function this way allows the script to be called repeatedly
-# in an interactive shell without closing the session
 if __name__ == "__main__":
   sys.exit(main())
 

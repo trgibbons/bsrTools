@@ -1,0 +1,42 @@
+.[mcl] new tab created
+[mcl] pid 52110
+ ite -------------------  chaos  time hom(avg,lo,hi) expa expb expc fmv
+  1  ...................   8.23  0.03 1.01/0.23/2.07 2.09 2.09 2.09  11
+  2  ...................  20.33  0.06 0.79/0.34/1.86 1.39 1.11 2.31  28
+  3  ...................  16.58  0.06 0.59/0.26/2.05 1.26 0.91 2.10  32
+  4  ...................  16.08  0.05 0.56/0.17/1.90 1.26 0.86 1.81  29
+  5  ...................  14.48  0.04 0.65/0.16/2.08 1.23 0.80 1.45  25
+  6  ...................   9.61  0.03 0.74/0.22/1.00 1.10 0.68 0.99  19
+  7  ...................   7.55  0.02 0.81/0.21/1.72 1.06 0.53 0.52   9
+  8  ...................   3.12  0.01 0.86/0.19/1.00 1.03 0.57 0.30   1
+  9  ...................   1.17  0.00 0.91/0.56/1.03 1.00 0.69 0.21   0
+ 10  ...................   0.81  0.00 0.94/0.65/1.16 1.00 0.82 0.17   0
+ 11  ...................   0.53  0.00 0.96/0.75/1.21 1.00 0.77 0.13   0
+ 12  ...................   0.34  0.00 0.97/0.55/1.00 1.00 0.86 0.11   0
+ 13  ...................   0.25  0.00 0.98/0.65/1.00 1.00 0.93 0.11   0
+ 14  ...................   0.25  0.00 0.99/0.76/1.00 1.00 0.91 0.10   0
+ 15  ...................   0.25  0.00 1.00/0.76/1.00 1.00 0.96 0.09   0
+ 16  ...................   0.25  0.00 1.00/0.77/1.00 1.00 0.96 0.09   0
+ 17  ...................   0.21  0.00 1.00/0.79/1.00 1.00 0.97 0.09   0
+ 18  ...................   0.09  0.00 1.00/0.91/1.00 1.00 0.99 0.09   0
+ 19  ...................   0.01  0.00 1.00/0.99/1.00 1.00 1.00 0.08   0
+ 20  ...................   0.00  0.00 1.00/1.00/1.00 1.00 1.00 0.08   0
+ 21  ...................   0.00  0.00 1.00/1.00/1.00 1.00 1.00 0.08   0
+[mcl] jury pruning marks: <99,99,99>, out of 100
+[mcl] jury pruning synopsis: <99.0 or perfect> (cf -scheme, -do log)
+[mcl] output is in AthalDmelaCelegHsapaScereSpomb_112233_1e-5.mclI17
+[mcl] 431 clusters found
+[mcl] output is in AthalDmelaCelegHsapaScereSpomb_112233_1e-5.mclI17
+
+Please cite:
+    Stijn van Dongen, Graph Clustering by Flow Simulation.  PhD thesis,
+    University of Utrecht, May 2000.
+       (  http://www.library.uu.nl/digiarchief/dip/diss/1895620/full.pdf
+       or  http://micans.org/mcl/lit/svdthesis.pdf.gz)
+OR
+    Stijn van Dongen, A cluster algorithm for graphs. Technical
+    Report INS-R0010, National Research Institute for Mathematics
+    and Computer Science in the Netherlands, Amsterdam, May 2000.
+       (  http://www.cwi.nl/ftp/CWIreports/INS/INS-R0010.ps.Z
+       or  http://micans.org/mcl/lit/INS-R0010.ps.Z)
+
